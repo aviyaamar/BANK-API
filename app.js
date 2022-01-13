@@ -95,20 +95,44 @@ app.put('/users/credit/:id/:credit', (req,res)=>{
 })
 
 
+app.put('/users/withdraw/:id', (req, res)=>
+{
+    const users =  loadUser()
+    const id=  req.params.id
+    const index = users.findIndex((user)=> user.id === id)
 
+    if(req.body.amount > users[index].cash + users[index].credit)
+    {
+        res.status(400).send('you are without mony')
+    }
+    else{
+      users[index].cash -= req.body.amount;
+      res.send(users[index])
+      savedUsers(users)
+    }
 
+})
 
+app.put('/users/transfer/:id', (req, res)=>{
+    const users =  loadUser()
+    const transfer = req.params.id
+    const amount = req.body.amount
+    const reciver = req.body.reciver
 
+    const UserTransfer = users.find((user)=>user.id === transfer)
+    const userReciver = users.find((user)=> user.id === reciver)
 
-
-
-
-
-
-
-
-
-
+    if(!transfer || !reciver) {    
+     throw new Error('no man') ;
+    }
+    else{
+        UserTransfer.cash -= amount
+        userReciver.cash += amount
+        savedUsers(users)
+        res.send({UserTransfer,userReciver })
+    }
+      
+})
 
 
 app.listen(PORT, ()=>{
